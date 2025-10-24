@@ -1,24 +1,12 @@
 ---
-- name: Simpele ntfy ping
+- name: Send a ntfy notification from demo-1
   hosts: demo-1
   become: true
-  vars:
-    ntfy_url: "https://ntfy.dinandserver.duckdns.org/phone"
-    ntfy_message: "Ping vanaf Ansible"
-
   tasks:
-    - name: Stuur ping naar ntfy
-      ansible.builtin.uri:
-        url: "{{ ntfy_url }}"
-        method: POST
-        body: "{{ ntfy_message }}"
-        body_format: raw
-        headers:
-          Content-Type: "text/plain"
-        status_code: [200,201,202,204]
-        return_content: no
+    - name: Send ntfy notification
+      ansible.builtin.command:
+        cmd: curl -d "This is a test notification from demo-1" http://ntfy.dinandserver.duckdns.org/phone
       register: ntfy_result
-
-    - name: Toon resultaat
+    - name: Show ntfy result
       ansible.builtin.debug:
-        var: ntfy_result.status
+        var: ntfy_result.stdout
