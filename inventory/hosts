@@ -1,0 +1,10 @@
+[demo-1]
+demo-1
+
+[all-hosts]
+nignx-proxy
+nextcloudpi
+mc-server
+arr-stack
+ntfy
+authentik

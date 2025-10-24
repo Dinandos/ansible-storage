@@ -1,0 +1,26 @@
+---
+- name: Simpele ntfy ping
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    ntfy_url: "https://ntfy.dinandserver.duckdns.org/phone"
+    ntfy_message: "Ping vanaf Ansible"
+
+  tasks:
+    - name: Stuur ping naar ntfy
+      ansible.builtin.uri:
+        url: "{{ ntfy_url }}"
+        method: POST
+        body: "{{ ntfy_message }}"
+        body_format: raw
+        headers:
+          Content-Type: "text/plain"
+        status_code: [200,201,202,204]
+        return_content: no
+      register: ntfy_result
+
+    - name: Toon resultaat
+      ansible.builtin.debug:
+        var: ntfy_result.status
