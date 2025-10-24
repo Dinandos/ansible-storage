@@ -1,9 +1,7 @@
 ---
 - name: Simpele ntfy ping
-  hosts: localhost
-  connection: local
-  gather_facts: no
-
+  hosts: demo-1
+  become: true
   vars:
     ntfy_url: "https://ntfy.dinandserver.duckdns.org/phone"
     ntfy_message: "Ping vanaf Ansible"
