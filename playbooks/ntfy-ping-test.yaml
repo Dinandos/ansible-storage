@@ -2,7 +2,7 @@
 - name: Send a ntfy notification from demo-1
   hosts: 192.168.178.69
   become: true
+  become_user: root
   tasks:
     - name: Send ntfy notification
-      ansible.builtin.command:
-        cmd: curl -d "This is a test notification from demo-1" https://ntfy.dinandserver.duckdns.org/phone
+      shell: curl -d "This is a test notification from demo-1" https://ntfy.dinandserver.duckdns.org/phone
