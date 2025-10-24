@@ -5,8 +5,4 @@
   tasks:
     - name: Send ntfy notification
       ansible.builtin.command:
-        cmd: curl -d "This is a test notification from demo-1" http://ntfy.dinandserver.duckdns.org/phone
-      register: ntfy_result
-    - name: Show ntfy result
-      ansible.builtin.debug:
-        var: ntfy_result.stdout
+        cmd: curl -d "This is a test notification from demo-1" https://ntfy.dinandserver.duckdns.org/phone
