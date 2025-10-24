@@ -1,6 +1,6 @@
 ---
 - name: Send a ntfy notification from demo-1
-  hosts: demo-1
+  hosts: 192.168.178.69
   become: true
   tasks:
     - name: Send ntfy notification
