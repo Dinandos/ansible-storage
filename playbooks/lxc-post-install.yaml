@@ -1,0 +1,137 @@
+---
+- name: Configure Systeem en Installeer Tools
+  hosts: demo-1
+  become: yes  # Zorg ervoor dat de taken worden uitgevoerd met root-rechten (sudo)
+  vars:
+    ntfy_server_url: "https://ntfy.dinandserver.duckdns.org/phone"
+
+  tasks:
+    - name: ⏳ Start Notificatie - Start Installatie
+      ansible.builtin.uri:
+        url: "{{ ntfy_server_url }}"
+        method: POST
+        headers:
+          Title: "Start Installatie"
+        body: "Installatie van Docker, SSH, Nala en Neofetch begint op {{ ansible_hostname }}"
+        body_format: raw
+      run_once: true # Voer dit slechts één keer uit, zelfs bij meerdere hosts
+
+    - name: 🔄 Update apt package cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600 # Cache 1 uur geldig
+
+    - name: 📦 Installeer vereiste pakketten (ca-certificates, curl, gnupg, lsb-release)
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    # --- Docker Installatie ---
+    - name: 🗝️ Voeg Docker's officiële GPG sleutel toe
+      ansible.builtin.apt_key:
+        url: "https://download.docker.com/linux/{{ ansible_distribution|lower }}/gpg"
+        state: present
+        keyring: /etc/apt/keyrings/docker.gpg
+      # Conditie om de juiste distributie te bepalen, bijv. 'debian' of 'ubuntu'
+      when: ansible_distribution in ['Debian', 'Ubuntu']
+
+    - name: ⚙️ Voeg Docker repository toe
+      ansible.builtin.apt_repository:
+        repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable"
+        state: present
+        filename: docker
+      when: ansible_distribution in ['Debian', 'Ubuntu']
+
+    - name: 🔄 Update apt package cache na toevoegen repo
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: 🐳 Installeer Docker Engine, CLI, containerd en plugins
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: ✅ Notificatie - Docker installatie voltooid
+      ansible.builtin.uri:
+        url: "{{ ntfy_server_url }}"
+        method: POST
+        headers:
+          Title: "Docker Install"
+        body: "Docker installatie is klaar op {{ ansible_hostname }}"
+        body_format: raw
+      run_once: true
+
+    # --- SSH Configuratie ---
+    - name: 📜 Pas sshd_config aan voor PermitRootLogin en PasswordAuthentication
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^{{ item.regex }}'
+        line: "{{ item.line }}"
+        state: present
+        backup: yes
+      loop:
+        - { regex: '#?PermitRootLogin .*', line: 'PermitRootLogin yes' }
+        - { regex: '#?PasswordAuthentication .*', line: 'PasswordAuthentication yes' }
+
+    - name: 🔄 Zorg ervoor dat de SSH-service draait en ingeschakeld is
+      ansible.builtin.service:
+        name: ssh
+        state: restarted # Gebruik 'restarted' om de nieuwe config toe te passen
+        enabled: yes
+
+    - name: ✅ Notificatie - SSH configuratie voltooid
+      ansible.builtin.uri:
+        url: "{{ ntfy_server_url }}"
+        method: POST
+        headers:
+          Title: "SSH Install"
+        body: "SSH installatie is klaar op {{ ansible_hostname }}"
+        body_format: raw
+      run_once: true
+
+    # --- Nala en Neofetch Installatie ---
+    - name: 🚀 Installeer Nala (apt front-end)
+      ansible.builtin.apt:
+        name: nala
+        state: present
+
+    - name: ✅ Notificatie - Nala installatie voltooid
+      ansible.builtin.uri:
+        url: "{{ ntfy_server_url }}"
+        method: POST
+        headers:
+          Title: "Nala Install"
+        body: "Nala installatie is klaar op {{ ansible_hostname }}"
+        body_format: raw
+      run_once: true
+
+    - name: 💻 Installeer Neofetch met Nala (als Nala beschikbaar is)
+      ansible.builtin.command: nala install -y neofetch
+      args:
+        warn: no # Onderdrukt de waarschuwing over het gebruik van 'command' i.p.v. 'package' module
+
+    # --- Afronding en Notificatie ---
+    - name: 🧹 Wis shell geschiedenis
+      ansible.builtin.command: history -c
+      # Dit is een 'best-effort' taak. Geschiedenis wordt meestal gewist in de huidige sessie,
+      # maar is moeilijker universeel te wissen voor alle users in een geautomatiseerd script.
+
+    - name: 🎉 Notificatie - Script is Voltooid
+      ansible.builtin.uri:
+        url: "{{ ntfy_server_url }}"
+        method: POST
+        headers:
+          Title: "Script Voltooid"
+        body: "Alle configuraties (Docker, SSH, Nala, Neofetch) zijn succesvol voltooid op {{ ansible_hostname }}."
+        body_format: raw
+      run_once: true
