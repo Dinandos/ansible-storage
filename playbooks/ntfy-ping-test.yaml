@@ -7,16 +7,4 @@
     ntfy_message: "This is a test notification from demo-1"
   tasks:
     - name: Send ntfy notification
-      ansible.builtin.uri:
-        url: "{{ ntfy_url }}"
-        method: POST
-        body: "{{ ntfy_message }}"
-        body_format: raw
-        headers:
-          Content-Type: "text/plain"
-      changed_when: false
-      register: ntfy_result
-
-    - name: Show response
-      debug:
-        var: ntfy_result
+      shell: curl -d "{{ ntfy_message }}" {{ ntfy_url }}
