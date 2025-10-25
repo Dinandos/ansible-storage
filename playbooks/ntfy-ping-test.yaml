@@ -1,8 +1,22 @@
 ---
-- name: Send a ntfy notification from demo-1
+- name: Send ntfy notification from demo-1
   hosts: 192.168.178.69
   become: true
-  become_user: root
+  vars:
+    ntfy_url: "https://ntfy.dinandserver.duckdns.org/phone"
+    ntfy_message: "This is a test notification from demo-1"
   tasks:
     - name: Send ntfy notification
-      shell: curl -d "This is a test notification from demo-1" https://ntfy.dinandserver.duckdns.org/phone
+      ansible.builtin.uri:
+        url: "{{ ntfy_url }}"
+        method: POST
+        body: "{{ ntfy_message }}"
+        body_format: raw
+        headers:
+          Content-Type: "text/plain"
+      changed_when: false
+      register: ntfy_result
+
+    - name: Show response
+      debug:
+        var: ntfy_result
