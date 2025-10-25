@@ -1,6 +1,6 @@
 ---
 - name: Send ntfy notification from demo-1
-  hosts: 192.168.178.69
+  hosts: demo-1
   become: true
   vars:
     ntfy_url: "https://ntfy.dinandserver.duckdns.org/phone"
