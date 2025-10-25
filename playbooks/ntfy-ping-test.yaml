@@ -2,9 +2,7 @@
 - name: Send ntfy notification from demo-1
   hosts: 192.168.178.69
   become: true
-  vars:
-    ntfy_url: "https://ntfy.dinandserver.duckdns.org/phone"
-    ntfy_message: "This is a test notification from demo-1"
+ 
   tasks:
     - name: Send ntfy notification
-      shell: curl -d "{{ ntfy_message }}" https://ntfy.dianndserver.duckdns.org/phone
+      shell: curl -d "This is a test notification from demo-1" https://ntfy.dianndserver.duckdns.org/phone
